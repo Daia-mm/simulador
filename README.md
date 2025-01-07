@@ -28,7 +28,7 @@ document.getElementById("freteForm").addEventListener("submit", function(event) 
 
 // Função para calcular a distância utilizando Google Maps API
 function calcularDistancia(origem, destino, callback) {
-    const key = 'SUA_CHAVE_DE_API';  // Substitua com a sua chave de API do Google Maps
+    const key = 'AIzaSyDabkN-hiJRvYZlQr1JfeSsKVQsDIu6g8M';  // Substitua com a sua chave de API do Google Maps
     const service = new google.maps.DistanceMatrixService();
 
     // Requisição para a API de distâncias
