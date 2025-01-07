@@ -1,34 +1,61 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulação de Frete</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <div class="container">
-        <h1>Simulação de Frete</h1>
-        <form id="freteForm">
-            <label for="origem">Cidade de Origem:</label>
-            <input type="text" id="origem" name="origem" required>
+document.getElementById("freteForm").addEventListener("submit", function(event) {
+    event.preventDefault();
 
-            <label for="destino">Cidade de Destino:</label>
-            <input type="text" id="destino" name="destino" required>
+    // Obtendo os valores dos campos
+    const origem = document.getElementById("origem").value;
+    const destino = document.getElementById("destino").value;
+    const peso = parseFloat(document.getElementById("peso").value);
 
-            <label for="peso">Peso da Carga (kg):</label>
-            <input type="number" id="peso" name="peso" required min="1">
+    // Validação básica
+    if (!origem || !destino || !peso || peso <= 0) {
+        alert("Por favor, preencha todos os campos corretamente.");
+        return;
+    }
 
-            <button type="submit">Calcular Frete</button>
-        </form>
+    // Consultando a distância via Google Maps API
+    calcularDistancia(origem, destino, function(distancia) {
+        if (distancia) {
+            const valorFrete = calcularValorFrete(distancia, peso);
 
-        <div id="resultado">
-            <h3>Resultado</h3>
-            <p id="distancia">Distância: </p>
-            <p id="valorFrete">Valor do Frete: </p>
-        </div>
-    </div>
+            // Exibindo os resultados
+            document.getElementById("distancia").textContent = `Distância: ${distancia} km`;
+            document.getElementById("valorFrete").textContent = `Valor do Frete: R$ ${valorFrete.toFixed(2)}`;
+        } else {
+            alert("Não foi possível calcular a distância.");
+        }
+    });
+});
 
-    <script src="script.js"></script>
-</body>
-</html>
+// Função para calcular a distância utilizando Google Maps API
+function calcularDistancia(origem, destino, callback) {
+    const key = 'SUA_CHAVE_DE_API';  // Substitua com a sua chave de API do Google Maps
+    const service = new google.maps.DistanceMatrixService();
+
+    // Requisição para a API de distâncias
+    service.getDistanceMatrix(
+        {
+            origins: [origem],
+            destinations: [destino],
+            travelMode: 'DRIVING', // Opção de transporte: carro (por estrada)
+        },
+        function(response, status) {
+            if (status === 'OK') {
+                // Pegando a distância da resposta
+                const distancia = response.rows[0].elements[0].distance.value / 1000;  // Converter metros para quilômetros
+                callback(distancia);
+            } else {
+                console.error('Erro ao calcular distância:', status);
+                callback(null);
+            }
+        }
+    );
+}
+
+// Função fictícia para calcular o valor do frete
+function calcularValorFrete(distancia, peso) {
+    // Definindo uma taxa fixa por quilômetro e por peso
+    const taxaPorKm = 0.8; // R$ por km
+    const taxaPorKg = 0.1; // R$ por kg
+
+    return (distancia * taxaPorKm) + (peso * taxaPorKg);
+}
